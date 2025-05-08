@@ -1,10 +1,13 @@
-﻿namespace PasswordManager.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PasswordManager.Models
 {
     public interface ISecretable
     {
-        int Id { get; set; }
-        int ClientId { get; set; }
-        string Name { get; set; }
+        public int Id { get; set; }
+        public int ClientId { get; set; }
+        public string Name { get; set; }
+        public string Value { get; set; }
         EnumSecretQuality SecretQuality { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastUpdatedDate { get; set; }
