@@ -19,7 +19,7 @@ namespace PasswordManager.Services
             return 0;
         }
 
-        public void UpdateSecret(ISecretable secret, string secretValue)
+        public void UpdateSecret(SecretBase secret, string secretValue)
         {
             // Implementation to check a secret
         }

@@ -7,6 +7,6 @@ namespace PasswordManager.Services
         string GetSecret(string secretName);
         void SetSecret(string secretName, string secretValue);
         int CheckSecret(string secretName);
-        void UpdateSecret(ISecretable secret, string secretValue);
+        void UpdateSecret(SecretBase secret, string secretValue);
     }
 }

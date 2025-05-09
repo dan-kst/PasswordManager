@@ -2,27 +2,13 @@
 
 namespace PasswordManager.Models
 {
-    public class Pincode : ISecretable
+    public class Pincode : SecretBase
     {
-        private const int MIN_NAME_LENGTH = 4;
-        private const int MAX_NAME_LENGTH = 100;
+        public Pincode() : base()
+        {
 
-        private const int MIN_PASSWORD_LENGTH = 4;
-        private const int MAX_PASSWORD_LENGTH = 12;
-
-        public int Id { get; set; }
-        public int IClientId { get; set; }
-        [Required]
-        [Range(MIN_NAME_LENGTH, MAX_NAME_LENGTH, ErrorMessage = "Invalid Name length.")]
-        public string Name { get; set; }
-        [Required]
-        [Range(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH, ErrorMessage = "Invalid PIN length.")]
-        public string Value { get; set; }
-        public EnumSecretQuality SecretQuality { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime LastUpdatedDate { get; set; }
-        public IClient Client { get; set; }
-        public Pincode(IClient client, string name, string value)
+        }
+        public Pincode(ClientBase client, string name, string value)
         {
             Client = client;
             IClientId = client.Id;
@@ -30,6 +16,7 @@ namespace PasswordManager.Models
             Value = value;
             CreatedDate = DateTime.Now;
             LastUpdatedDate = DateTime.Now;
+            isNull = false;
         }
     }
 }
