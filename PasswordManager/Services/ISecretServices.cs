@@ -4,9 +4,9 @@ namespace PasswordManager.Services
 {
     public interface ISecretServices
     {
-        string GetSecret(string secretName);
-        void SetSecret(string secretName, string secretValue);
-        int CheckSecret(string secretName);
-        void UpdateSecret(SecretBase secret, string secretValue);
+        public string GetSecret(string secretName);
+        public void SetSecret(string secretName, string secretValue);
+        public int CheckSecret(string secretName);
+        public void UpdateSecret(SecretBase secret, string secretValue);
     }
 }

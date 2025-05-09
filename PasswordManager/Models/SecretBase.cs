@@ -9,6 +9,7 @@ namespace PasswordManager.Models
         public string? Name { get; set; }
         public string? Value { get; set; }
         public EnumSecretQuality SecretQuality { get; set; }
+        public EnumSecretType SecretType { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastUpdatedDate { get; set; }
         public ClientBase? Client { get; set; }
@@ -18,7 +19,7 @@ namespace PasswordManager.Models
             SecretQuality = EnumSecretQuality.Weak;
             CreatedDate = DateTime.Now;
             LastUpdatedDate = DateTime.Now;
-            isNull = true;
+            SecretType = EnumSecretType.None;
         }
     }
 }

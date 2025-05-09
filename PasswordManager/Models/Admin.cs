@@ -6,7 +6,7 @@ namespace PasswordManager.Models
     {
         public Admin() : base()
         {
-
+            ClientType = EnumClientType.Admin;
         }
     }
 }

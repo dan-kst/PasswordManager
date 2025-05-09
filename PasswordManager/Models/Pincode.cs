@@ -6,7 +6,7 @@ namespace PasswordManager.Models
     {
         public Pincode() : base()
         {
-
+            SecretType = EnumSecretType.Pincode;
         }
         public Pincode(ClientBase client, string name, string value)
         {
@@ -16,7 +16,7 @@ namespace PasswordManager.Models
             Value = value;
             CreatedDate = DateTime.Now;
             LastUpdatedDate = DateTime.Now;
-            isNull = false;
+            SecretQuality = EnumSecretQuality.Strong;
         }
     }
 }

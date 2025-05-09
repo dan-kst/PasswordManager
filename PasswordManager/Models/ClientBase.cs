@@ -19,14 +19,14 @@ namespace PasswordManager.Models
         [Required]
         [StringLength(MAX_PASSWORD_LENGTH, MinimumLength = MIN_PASSWORD_LENGTH,ErrorMessage = "Invalid Password length.")]
         public string MasterPassword { get; set; }
-        public bool isNull { get; set; }
+        public EnumClientType ClientType { get; set; }
         public ClientBase()
         {
             Id = 0;
             Name = string.Empty;
             Email = string.Empty;
             MasterPassword = string.Empty;
-            isNull = true;
+            ClientType = EnumClientType.None;
         }
     }
 }

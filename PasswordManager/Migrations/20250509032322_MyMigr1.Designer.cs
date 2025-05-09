@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PasswordManager.Contexts;
 
@@ -11,9 +12,11 @@ using PasswordManager.Contexts;
 namespace PasswordManager.Migrations
 {
     [DbContext(typeof(ClientContext))]
-    partial class ClientContextModelSnapshot : ModelSnapshot
+    [Migration("20250509032322_MyMigr1")]
+    partial class MyMigr1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,8 +33,10 @@ namespace PasswordManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClientType")
-                        .HasColumnType("int");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -47,11 +52,14 @@ namespace PasswordManager.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("isNull")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
 
-                    b.HasDiscriminator<int>("ClientType").HasValue(0);
+                    b.HasDiscriminator().HasValue("ClientBase");
 
                     b.UseTphMappingStrategy();
                 });
@@ -70,6 +78,11 @@ namespace PasswordManager.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
                     b.Property<int>("IClientId")
                         .HasColumnType("int");
 
@@ -80,9 +93,6 @@ namespace PasswordManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SecretQuality")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SecretType")
                         .HasColumnType("int");
 
                     b.Property<int?>("UserId")
@@ -102,7 +112,7 @@ namespace PasswordManager.Migrations
 
                     b.ToTable("Secrets");
 
-                    b.HasDiscriminator<int>("SecretType").HasValue(0);
+                    b.HasDiscriminator().HasValue("SecretBase");
 
                     b.UseTphMappingStrategy();
                 });
@@ -111,21 +121,21 @@ namespace PasswordManager.Migrations
                 {
                     b.HasBaseType("PasswordManager.Models.ClientBase");
 
-                    b.HasDiscriminator().HasValue(3);
+                    b.HasDiscriminator().HasValue("Admin");
                 });
 
             modelBuilder.Entity("PasswordManager.Models.User", b =>
                 {
                     b.HasBaseType("PasswordManager.Models.ClientBase");
 
-                    b.HasDiscriminator().HasValue(1);
+                    b.HasDiscriminator().HasValue("User");
                 });
 
             modelBuilder.Entity("PasswordManager.Models.Pincode", b =>
                 {
                     b.HasBaseType("PasswordManager.Models.SecretBase");
 
-                    b.HasDiscriminator().HasValue(2);
+                    b.HasDiscriminator().HasValue("Pincode");
                 });
 
             modelBuilder.Entity("PasswordManager.Models.SitePassword", b =>
@@ -135,7 +145,7 @@ namespace PasswordManager.Migrations
                     b.Property<string>("SiteUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue(1);
+                    b.HasDiscriminator().HasValue("SitePassword");
                 });
 
             modelBuilder.Entity("PasswordManager.Models.SecretBase", b =>

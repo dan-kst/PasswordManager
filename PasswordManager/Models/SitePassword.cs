@@ -7,7 +7,7 @@ namespace PasswordManager.Models
         public string? SiteUrl { get; set; }
         public SitePassword() : base()
         {
-            
+            SecretType = EnumSecretType.SitePassword;
         }
         public SitePassword(ClientBase client, string value, string name, string url)
         {
@@ -18,7 +18,7 @@ namespace PasswordManager.Models
             SiteUrl = url;
             CreatedDate = DateTime.Now;
             LastUpdatedDate = DateTime.Now;
-            isNull = false;
+            SecretType = EnumSecretType.SitePassword;
         }
     }
 }
