@@ -17,6 +17,7 @@ namespace PasswordManager.Controllers
             return View();
         }
         [HttpGet]
+        [Route("Admin/Create")]
         public IActionResult CreateUser()
         {
             return View();
@@ -37,7 +38,8 @@ namespace PasswordManager.Controllers
             }
         }
         [HttpGet]
-        public IActionResult EditUser()
+        [Route("Admin/Edit/{id}")]
+        public IActionResult EditUser(int id)
         {
             return View();
         }
@@ -57,26 +59,31 @@ namespace PasswordManager.Controllers
             }
         }
         [HttpGet]
-        public IActionResult DeleteUser()
+        [Route("Admin/Delete/{id}")]
+        public IActionResult DeleteUser(int id)
         {
             return View();
         }
         [HttpPost]
-        public IActionResult DeleteUser(ClientBase client)
+        [Route("Admin/Delete/{id}/Confirm")]
+        public IActionResult DeleteUser(int id, ClientBase client)
         {
             return View();
         }
         [HttpGet]
+        [Route("Admin/View/{id}")]
         public IActionResult ViewUser()
         {
             return View();
         }
         [HttpGet]
+        [Route("Admin/SearchResults")]
         public IActionResult SearchUser()
         {
             return View();
         }
         [HttpPost]
+        [Route("Admin/SearchResults/{searchName}")]
         public IActionResult SearchUser(string searchName)
         {
             return View();

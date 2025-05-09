@@ -11,6 +11,7 @@ namespace PasswordManager.Controllers
             return View();
         }
         [HttpGet]
+        [Route("[controller]/Create")]
         public IActionResult CreatePassword()
         {
             return View();
@@ -32,7 +33,8 @@ namespace PasswordManager.Controllers
             }
         }
         [HttpGet]
-        public IActionResult EditPassword()
+        [Route("[controller]/Edit/{id}")]
+        public IActionResult EditPassword(int id)
         {
             return View();
         }
@@ -53,17 +55,20 @@ namespace PasswordManager.Controllers
             }
         }
         [HttpGet]
-        public IActionResult DeletePassword()
+        [Route("[controller]/Delete/{id}")]
+        public IActionResult DeletePassword(int id)
         {
             return View();
         }
         [HttpPost]
-        public IActionResult DeletePassword(string password)
+        [Route("[controller]/Delete/{id}/Confirm")]
+        public IActionResult DeletePassword(int id, SecretBase secret)
         {
             // Logic to delete a password
             return View();
         }
-        public IActionResult ViewPassword()
+        [Route("[controller]/View/{id}")]
+        public IActionResult ViewPassword(int id)
         {
             return View();
         }
@@ -73,6 +78,7 @@ namespace PasswordManager.Controllers
             return View();
         }
         [HttpPost]
+        [Route("[controller]/SearchResult/{searchName}")]
         public IActionResult SearchPassword(string searchName)
         {
             // Logic to search for a password

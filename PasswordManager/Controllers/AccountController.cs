@@ -12,10 +12,12 @@ namespace PasswordManager.Controllers
         {
             _context = context;
         }
+        [Route("[controller]")]
         public IActionResult Index()
         {
             return View();
         }
+        [Route("[controller]/Login")]
         [HttpGet]
         public IActionResult LoginAccount()
         {
@@ -41,6 +43,7 @@ namespace PasswordManager.Controllers
         {
             return View();
         }
+        [Route("[controller]/Register")]
         [HttpPost]
         public IActionResult RegisterAccount(ClientBase client)
         {
@@ -58,7 +61,8 @@ namespace PasswordManager.Controllers
         }
         }
         [HttpGet]
-        public IActionResult EditAccount()
+        [Route("[controller]/Edit/{id}")]
+        public IActionResult EditAccount(int id)
         {
             return View();
         }
@@ -78,12 +82,14 @@ namespace PasswordManager.Controllers
             }
         }
         [HttpGet]
+        [Route("[controller]/Delete/{id}")]
         public IActionResult DeleteAccount()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult DeleteAccount(ClientBase client)
+        [Route("[controller]/Delete/{id}/Confirm")]
+        public IActionResult DeleteAccount(int id, ClientBase client)
         {
             return View();
         }
