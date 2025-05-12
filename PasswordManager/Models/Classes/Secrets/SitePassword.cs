@@ -1,26 +1,28 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using PasswordManager.Models.Classes.Clients;
 using PasswordManager.Models.Enums;
 
 namespace PasswordManager.Models.Classes.Secrets
 {
     public class SitePassword : SecretBase
     {
-        public string? SiteUrl { get; set; }
+        [Display(Name = "Name")]
+        public override string? Name { get { return base.Name; } set { base.Name = value; } }
+        
+        [Display(Name = "Password")]
+        public override string? Value { get { return base.Value; } set { base.Value = value; } }
+        
+        [Display(Name = "Type")]
+        public override EnumSecretType SecretType { get { return base.SecretType; } set { base.SecretType = value; } }
+        
+        [Display(Name = "Password Strength")]
+        public EnumSecretQuality SecretQuality { get; set; }
+        
+        [Display(Name = "URL")]
+        public string? SiteURL { get; set; }
         public SitePassword() : base()
         {
             SecretType = EnumSecretType.SitePassword;
-        }
-        public SitePassword(ClientBase client, string value, string name, string url)
-        {
-            Client = client;
-            IClientId = client.Id;
-            Value = value;
-            Name = name;
-            SiteUrl = url;
-            CreatedDate = DateTime.Now;
-            LastUpdatedDate = DateTime.Now;
-            SecretType = EnumSecretType.SitePassword;
+            SecretQuality = EnumSecretQuality.Weak;
         }
     }
 }

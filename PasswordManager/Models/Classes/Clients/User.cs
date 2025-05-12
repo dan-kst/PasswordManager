@@ -24,9 +24,12 @@ namespace PasswordManager.Models.Classes.Clients
         public override string MasterPassword { get => base.MasterPassword; set => base.MasterPassword = value; }
         
         public ICollection<SecretBase>? Secrets { get; set; }
+       
         public int PasswordsDeleted { get; set; }
         public int PasswordsCreated { get; set; }
         public int PasswordsUpdated { get; set; }
+        
+        
         public User() : base()
         {
             ClientType = EnumClientType.Personal;

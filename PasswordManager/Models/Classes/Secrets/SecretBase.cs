@@ -7,24 +7,31 @@ namespace PasswordManager.Models.Classes.Secrets
     public class SecretBase
     {
         public int Id { get; set; }
-        public int IClientId { get; set; }
+        
+        public int ClientId { get; set; }
+        
         [Display(Name = "Name")]
-        public string? Name { get; set; }
+        public virtual string? Name { get; set; }
+        
         [Display(Name = "Value")]
-        public string? Value { get; set; }
-        [Display(Name = "Strength")]
-        public EnumSecretQuality SecretQuality { get; set; }
+        public virtual string? Value { get; set; }
+        
         [Display(Name = "Type")]
-        public EnumSecretType SecretType { get; set; }
+        public virtual EnumSecretType SecretType { get; set; }
+        
+        [Display(Name = "Date of creation")]
         public DateTime CreatedDate { get; set; }
+        
+        [Display(Name = "Date of the last changing")]
         public DateTime LastUpdatedDate { get; set; }
+        
         public ClientBase? Client { get; set; }
+        
+        
         public SecretBase()
         {
-            SecretQuality = EnumSecretQuality.Weak;
             CreatedDate = DateTime.Now;
             LastUpdatedDate = DateTime.Now;
-            SecretType = EnumSecretType.None;
         }
     }
 }
