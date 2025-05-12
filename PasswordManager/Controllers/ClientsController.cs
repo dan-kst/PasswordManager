@@ -1,81 +1,84 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using PasswordManager.Contexts;
 using PasswordManager.Models;
 
 namespace PasswordManager.Controllers
 {
-    public class PasswordsController : Controller
+    public class ClientsController : Controller
     {
+        private readonly ClientContext _context;
+
+        public ClientsController(ClientContext context)
+        {
+            _context = context;
+        }
         public IActionResult Index()
         {
             return View();
         }
         [HttpGet]
-        public IActionResult CreatePassword()
+        public IActionResult CreateUser()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult CreatePassword(SecretBase secret)
+        public IActionResult CreateUser(ClientBase client)
         {
-            // Logic to create a password
             // Logic to authenticate the user
             if (ModelState.IsValid)
             {
                 // If successful, redirect to a different action
-                return RedirectToAction("Index", "Passwords");
+                return RedirectToAction("Index", "Admin");
             }
             else
             {
                 // If authentication fails, return to the login view with an error message
-                return View(secret);
+                return View(client);
             }
         }
         [HttpGet]
-        public IActionResult EditPassword()
+        public IActionResult EditUser()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult EditPassword(SecretBase secret)
+        public IActionResult EditUser(ClientBase client)
         {
-            // Logic to edit a password
             // Logic to authenticate the user
             if (ModelState.IsValid)
             {
                 // If successful, redirect to a different action
-                return RedirectToAction("ViewPassword", "Passwords");
+                return RedirectToAction("ViewUser", "Admin");
             }
             else
             {
                 // If authentication fails, return to the login view with an error message
-                return View(secret);
+                return View(client);
             }
         }
         [HttpGet]
-        public IActionResult DeletePassword()
+        public IActionResult DeleteUser()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult DeletePassword(string password)
-        {
-            // Logic to delete a password
-            return View();
-        }
-        public IActionResult ViewPassword()
+        public IActionResult DeleteUser(ClientBase client)
         {
             return View();
         }
         [HttpGet]
-        public IActionResult SearchPassword()
+        public IActionResult ViewUser()
+        {
+            return View();
+        }
+        [HttpGet]
+        public IActionResult SearchUser()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult SearchPassword(string searchName)
+        public IActionResult SearchUser(string searchName)
         {
-            // Logic to search for a password
             return View();
         }
     }
