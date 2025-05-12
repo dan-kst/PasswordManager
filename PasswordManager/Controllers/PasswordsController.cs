@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Models;
 
 namespace PasswordManager.Controllers
 {
+    [Authorize(Roles = "User")]
     public class PasswordsController : Controller
     {
         public IActionResult Index()

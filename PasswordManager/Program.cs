@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PasswordManager.Contexts;
+using PasswordManager.Models;
 
 namespace PasswordManager
 {
@@ -13,6 +14,17 @@ namespace PasswordManager
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ClientContext>(options => options.UseSqlServer(connection));
+            builder.Services.AddAuthentication("PasswordManagerAuth")
+                .AddCookie("PasswordManagerAuth", options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    //options.AccessDeniedPath = "/Login/AccessDenied";
+                });
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Admin", policy => policy.RequireRole(EnumClientType.Admin.ToString()));
+                options.AddPolicy("User", policy => policy.RequireRole(EnumClientType.Personal.ToString(), EnumClientType.Personal.ToString()));
+            });
 
             var app = builder.Build();
 
@@ -28,6 +40,7 @@ namespace PasswordManager
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseAuthentication();
 
             app.MapStaticAssets();
             app.MapControllerRoute(

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Contexts;
 using PasswordManager.Models;
 
 namespace PasswordManager.Controllers
 {
+    [Authorize(Roles ="Admin")]
     public class ClientsController : Controller
     {
         private readonly ClientContext _context;

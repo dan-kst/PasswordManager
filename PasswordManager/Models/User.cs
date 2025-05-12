@@ -7,6 +7,7 @@ namespace PasswordManager.Models
         public ICollection<SecretBase>? Secrets { get; set; }
         public User() : base()
         {
+            ClientType = EnumClientType.Personal;
             Secrets = null;
         }
     }
