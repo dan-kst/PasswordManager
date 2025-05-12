@@ -1,4 +1,4 @@
-﻿namespace PasswordManager.Models
+﻿namespace PasswordManager.Models.Enums
 {
     public enum EnumSecretQuality
     {

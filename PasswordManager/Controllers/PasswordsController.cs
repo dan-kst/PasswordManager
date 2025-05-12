@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using PasswordManager.Models;
+using PasswordManager.Models.Classes;
 
 namespace PasswordManager.Controllers
 {

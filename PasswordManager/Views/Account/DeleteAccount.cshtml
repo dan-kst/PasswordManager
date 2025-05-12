@@ -1,0 +1,14 @@
+﻿@using PasswordManager.Models.Classes
+@{
+	@model ClientBase
+	ViewData["Title"] = "Account Info";
+}
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete your account <strong>@Model.Email</strong>?</p>
+
+<form asp-action="DeleteAccount" method="post">
+	<button type="submit" class="btn btn-danger">Confirm Delete</button>
+	<a href="@Url.Action("Index", "Clients")" class="btn btn-secondary">Cancel</a>
+</form>

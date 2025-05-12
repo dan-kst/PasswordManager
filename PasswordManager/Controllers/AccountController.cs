@@ -3,9 +3,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PasswordManager.Contexts;
-using PasswordManager.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using PasswordManager.Models.Classes;
 
 namespace PasswordManager.Controllers
 {
@@ -21,17 +21,19 @@ namespace PasswordManager.Controllers
         [Route("[controller]")]
         public IActionResult Index()
         {
+            //ClaimsPrincipal user = HttpContext.User;
             return View();
         }
+
+
         [Route("[controller]/Login")]
-
-
         [HttpGet]
         [AllowAnonymous]
         public IActionResult LoginAccount()
         {
             return View();
         }
+        [Route("[controller]/Login")]
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAccount(ClientBase client)
@@ -55,12 +57,13 @@ namespace PasswordManager.Controllers
                     return RedirectToAction("Index", "Passwords");
                 }
             }
-
+            ModelState.AddModelError("", "Incorrect Email or Password.");
             // If authentication fails, return to the login view with an error message
             return View(client);
         }
 
 
+        [Route("[controller]/Register")]
         [HttpGet]
         [AllowAnonymous]
         public IActionResult RegisterAccount()
