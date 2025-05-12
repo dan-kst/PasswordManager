@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using PasswordManager.Contexts;
+
 namespace PasswordManager
 {
     public class Program
@@ -5,9 +8,11 @@ namespace PasswordManager
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            string connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<ClientContext>(options => options.UseSqlServer(connection));
 
             var app = builder.Build();
 
