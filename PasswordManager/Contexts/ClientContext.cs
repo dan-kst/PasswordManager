@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PasswordManager.Models;
+using PasswordManager.Models.Classes;
+using PasswordManager.Models.Enums;
 
 namespace PasswordManager.Contexts
 {

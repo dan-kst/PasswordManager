@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Contexts;
-using PasswordManager.Models;
+using PasswordManager.Models.Classes;
 
 namespace PasswordManager.Controllers
 {
@@ -20,12 +20,12 @@ namespace PasswordManager.Controllers
         }
         [HttpGet]
         [Route("Admin/Create")]
-        public IActionResult CreateUser()
+        public IActionResult CreateClient()
         {
             return View();
         }
         [HttpPost]
-        public IActionResult CreateUser(ClientBase client)
+        public IActionResult CreateClient(ClientBase client)
         {
             // Logic to authenticate the user
             if (ModelState.IsValid)
@@ -41,12 +41,12 @@ namespace PasswordManager.Controllers
         }
         [HttpGet]
         [Route("Admin/Edit/{id}")]
-        public IActionResult EditUser(int id)
+        public IActionResult EditClient(int id)
         {
             return View();
         }
         [HttpPost]
-        public IActionResult EditUser(ClientBase client)
+        public IActionResult EditClient(ClientBase client)
         {
             // Logic to authenticate the user
             if (ModelState.IsValid)
@@ -62,31 +62,31 @@ namespace PasswordManager.Controllers
         }
         [HttpGet]
         [Route("Admin/Delete/{id}")]
-        public IActionResult DeleteUser(int id)
+        public IActionResult DeleteClient(int id)
         {
             return View();
         }
         [HttpPost]
         [Route("Admin/Delete/{id}/Confirm")]
-        public IActionResult DeleteUser(int id, ClientBase client)
+        public IActionResult DeleteClient(int id, ClientBase client)
         {
             return View();
         }
         [HttpGet]
         [Route("Admin/View/{id}")]
-        public IActionResult ViewUser()
+        public IActionResult ViewClient()
         {
             return View();
         }
         [HttpGet]
         [Route("Admin/SearchResults")]
-        public IActionResult SearchUser()
+        public IActionResult SearchClient()
         {
             return View();
         }
         [HttpPost]
         [Route("Admin/SearchResults/{searchName}")]
-        public IActionResult SearchUser(string searchName)
+        public IActionResult SearchClient(string searchName)
         {
             return View();
         }
