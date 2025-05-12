@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PasswordManager.Contexts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using PasswordManager.Models.Classes;
+using PasswordManager.Models.Classes.Clients;
 
 namespace PasswordManager.Controllers
 {

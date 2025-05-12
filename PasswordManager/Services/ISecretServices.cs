@@ -1,4 +1,4 @@
-﻿using PasswordManager.Models.Classes;
+﻿using PasswordManager.Models.Classes.Secrets;
 
 namespace PasswordManager.Services
 {

@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PasswordManager.Models.Classes.Clients;
 using PasswordManager.Models.Enums;
 
-namespace PasswordManager.Models.Classes
+namespace PasswordManager.Models.Classes.Secrets
 {
     public class Pincode : SecretBase
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Contexts;
-using PasswordManager.Models.Classes;
+using PasswordManager.Models.Classes.Clients;
 
 namespace PasswordManager.Controllers
 {

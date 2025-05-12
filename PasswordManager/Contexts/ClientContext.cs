@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PasswordManager.Models.Classes;
+using PasswordManager.Models.Classes.Clients;
+using PasswordManager.Models.Classes.Secrets;
 using PasswordManager.Models.Enums;
 
 namespace PasswordManager.Contexts
