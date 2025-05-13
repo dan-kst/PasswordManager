@@ -34,23 +34,32 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @if(Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SecretType)
+                    </td>
+                    <td>
+                        <a asp-action="EditPassword" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="ViewPassword" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="DeletePassword" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Value)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SecretType)
-                </td>
-                <td>
-                    <a asp-action="EditPassword" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="ViewPassword" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="DeletePassword" asp-route-id="@item.Id">Delete</a>
-                </td>
+                <td colspan="4" class="text-center">No passwords found.</td>
             </tr>
         }
     </tbody>

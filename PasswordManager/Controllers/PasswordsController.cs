@@ -5,7 +5,8 @@ using PasswordManager.Models.Classes.Secrets;
 
 namespace PasswordManager.Controllers
 {
-    [Authorize(Roles = "User")]
+    [Authorize(Policy = "User", AuthenticationSchemes = "PasswordManagerAuth")]
+    //[Authorize(Policy ="User")]
     public class PasswordsController : Controller
     {
         public IActionResult Index()

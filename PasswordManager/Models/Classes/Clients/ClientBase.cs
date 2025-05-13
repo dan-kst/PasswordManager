@@ -13,7 +13,7 @@ namespace PasswordManager.Models.Classes.Clients
         [Display(Name = "Password")]
         public virtual string MasterPassword { get; set; }
         [Display(Name = "Type")]
-        public EnumClientType ClientType { get; set; }
+        public virtual EnumClientType ClientType { get; set; }
         [Display(Name = "Date of creation")]
         public DateTime CreatedDate { get; set; }
         [Display(Name = "Date of the last changing")]

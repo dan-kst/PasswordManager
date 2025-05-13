@@ -2,7 +2,7 @@
 
 namespace PasswordManager.Services
 {
-    public class PasswordServices : ISecretServices
+    public class SecretServices
     {
         public string GetSecret(string secretName)
         {

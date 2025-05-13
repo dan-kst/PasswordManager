@@ -6,17 +6,19 @@ using PasswordManager.Contexts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PasswordManager.Models.Classes.Clients;
+using PasswordManager.Services;
 
 namespace PasswordManager.Controllers
 {
-    [Authorize]
     public class AccountController : Controller
     {
         private readonly ClientContext _context;
+        private readonly ClientServices _clientServices;
 
         public AccountController(ClientContext context)
         {
             _context = context;
+            _clientServices = new ClientServices(context);
         }
         [Route("[controller]")]
         public IActionResult Index()
@@ -33,31 +35,27 @@ namespace PasswordManager.Controllers
         {
             return View();
         }
+
         [Route("[controller]/Login")]
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAccount(ClientBase client)
         {
             // Logic to authenticate the user
-            if (ModelState.IsValid && _context.Clients != null)
+            if (ModelState.IsValid)
             {
-                var foundClient = await _context.Clients
-                    .Where(c => 
-                        c.Name.Equals(client.Name) && 
-                        c.Email.Equals(client.Email) && 
-                        c.MasterPassword.Equals(client.MasterPassword)
-                        )
-                    .FirstOrDefaultAsync();
+                var foundClient = await _clientServices.GetClientAsync(client);
 
                 if (foundClient != null)
                 {
                     await Authenticate(foundClient);
-
+                    Console.WriteLine($"\n\n{foundClient.Name} {foundClient.Email} {foundClient.MasterPassword} {foundClient.ClientType}\n\n");
                     //If successful, redirect to a different action
                     return RedirectToAction("Index", "Passwords");
                 }
+                else
+                    ModelState.AddModelError("", "Wrong email or password.");
             }
-            ModelState.AddModelError("", "Incorrect Email or Password.");
             // If authentication fails, return to the login view with an error message
             return View(client);
         }
@@ -70,66 +68,45 @@ namespace PasswordManager.Controllers
         {
             return View();
         }
-        [Route("[controller]/Register")]
 
+        [Route("[controller]/Register")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterAccount(ClientBase client)
+        public async Task<IActionResult> RegisterAccount(User user)
         {
-            // Logic to authenticate the user
-            if (ModelState.IsValid && _context.Clients != null)
+            if (ModelState.IsValid)
             {
-                var foundClient = await _context.Clients
-                    .Where(c => c.Email.Equals(client.Email))
-                    .FirstOrDefaultAsync();
+                var foundClient = await _clientServices.GetUserAsync(user);
 
                 if (foundClient != null)
                 {
                     ModelState.AddModelError("", "A client with this email already exists.");
-                    return View(client);
-                }
-
-                if (client is Admin admin)
-                {
-                    _context.Admins.Add(admin);
-                }
-                else if (client is User user)
-                {
-                    _context.Users.Add(user);
+                    return View(user);
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Invalid client type.");
-                    return View(client);
+                    _context.Users.Add(user);
                 }
 
                 await _context.SaveChangesAsync();
-                await Authenticate(client);
+                await Authenticate(user);
 
                 //If successful, redirect to a different action
                 return RedirectToAction("Index", "Passwords");
             }
 
             // If authentication fails, return to the login view with an error message
-            return View(client);
+            return View(user);
         }
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
+            await HttpContext.SignOutAsync("PasswordManagerAuth");
+            return RedirectToAction("Index", "Home");
         }
 
         private async Task Authenticate(ClientBase client)
         {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, client.Name),
-                new Claim(ClaimTypes.Email, client.Email),
-                new Claim(ClaimTypes.Role, client.ClientType.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, client.Id.ToString())
-            };
-            var identity = new ClaimsIdentity(claims, "PasswordManagerAuth");
-            var principal = new ClaimsPrincipal(identity);
+            var principal = _clientServices.AuthenticateClient(client);
             await HttpContext.SignInAsync("PasswordManagerAuth", principal);
         }
 

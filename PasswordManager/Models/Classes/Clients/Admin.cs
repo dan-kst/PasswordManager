@@ -21,6 +21,7 @@ namespace PasswordManager.Models.Classes.Clients
                         MinimumLength = AdminValidation.MIN_PASSWORD_LENGTH, 
                         ErrorMessage = AdminValidation.INVALID_PASSWORD_LENGTH)]
         public override string MasterPassword { get => base.MasterPassword; set => base.MasterPassword = value; }
+        public override EnumClientType ClientType { get => base.ClientType; set => base.ClientType = value; }
 
         public int UsersDeleted { get; set; }
         public int UsersCreated { get; set; }
