@@ -25,6 +25,10 @@ namespace PasswordManager.Contexts
             modelBuilder.Entity<Admin>().ToTable("Admin");
             modelBuilder.Entity<User>().ToTable("User");
 
+            modelBuilder.Entity<SecretBase>().ToTable("SecretBase");
+            modelBuilder.Entity<SitePassword>().ToTable("SitePassword");
+            modelBuilder.Entity<Pincode>().ToTable("Pincode");
+
             base.OnModelCreating(modelBuilder);
         }
     }

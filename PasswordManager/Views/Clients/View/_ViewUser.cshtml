@@ -1,0 +1,31 @@
+﻿@{
+	@model User
+    ViewData["Title"] = " - User";
+}
+
+<tr>
+	<th>
+		@Html.DisplayNameFor(model => model.PasswordsCreated)
+	</th>
+    <td>
+        @Html.DisplayFor(model => model.PasswordsCreated)
+    </td>
+</tr>
+
+<tr>
+    <th>
+		@Html.DisplayNameFor(model => model.PasswordsUpdated)
+	</th>
+    <td>
+        @Html.DisplayFor(model => model.PasswordsUpdated)
+    </td>
+</tr>
+
+<tr>
+    <th>
+        @Html.DisplayNameFor(model => model.PasswordsDeleted)
+    </th>
+    <td>
+        @Html.DisplayFor(model => model.PasswordsDeleted)
+    </td>
+</tr>

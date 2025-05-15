@@ -1,0 +1,30 @@
+﻿@{
+	@model Admin
+	ViewData["Title"] = " - Admin";
+}
+<tr>
+    <th>
+        @Html.DisplayNameFor(model => model.UsersCreated)
+    </th>
+    <td>
+        @Html.DisplayFor(model => model.UsersCreated)
+    </td>
+</tr>
+
+<tr>
+    <th>
+        @Html.DisplayNameFor(model => model.UsersUpdated)
+    </th>
+    <td>
+        @Html.DisplayFor(model => model.UsersUpdated)
+    </td>
+</tr>
+
+<tr>
+    <th>
+        @Html.DisplayNameFor(model => model.UsersDeleted)
+    </th>
+    <td>
+        @Html.DisplayFor(model => model.UsersDeleted)
+    </td>
+</tr>

@@ -5,9 +5,11 @@ namespace PasswordManager.Models.Classes.Secrets
 {
     public class SitePassword : SecretBase
     {
+        [Required]
         [Display(Name = "Name")]
         public override string? Name { get { return base.Name; } set { base.Name = value; } }
         
+        [Required]        
         [Display(Name = "Password")]
         public override string? Value { get { return base.Value; } set { base.Value = value; } }
         

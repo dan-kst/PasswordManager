@@ -1,12 +1,14 @@
-﻿@{
-	@model Admin
-	ViewData["Title"] = "Create Client";
+﻿@using PasswordManager.Models.Classes
+@using PasswordManager.Models.Classes.Clients
+@{
+	@model ClientBase
+	ViewData["Title"] = "Edit Client";
 }
 
-<h1>Create</h1>
+<h1>Edit</h1>
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="CreateClient" method="post">
+        <form asp-action="EditClient" method="post">
             <div class="form-group">
                 <label class="control-label">Name</label>
                 <input type="text" asp-for="Name" class="form-control" />

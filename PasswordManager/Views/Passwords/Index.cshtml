@@ -1,25 +1,22 @@
-﻿@using PasswordManager.Models.Classes
-@using PasswordManager.Models.Classes.Secrets
-@{
+﻿@{
 	@model IEnumerable<SecretBase>
-	ViewData["Title"] = "Passwords";
+    ViewData["Title"] = "Passwords";
 }
 
 <h1>Your Passwords</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="GetType">Create New</a>
 </p>
-<form asp-action="Index" method="get">
-    <div class="form-actions no-color">
-        <p>
-            Find by name: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
-        </p>
-    </div>
-</form>
-<table class="table table-bordered table-striped table-hover">
+<div class="form-actions no-color">
+    <p>
+        <input type="text" name="SearchString" placeholder="Find by name..." id="jsFilterInput" onkeyup="filterTableByName()" />
+        @* <input type="submit" value="Search" class="btn btn-default"/>  *@
+        @* <a asp-action="Index">Back to Full List</a> *@
+    </p>
+</div>
+
+<table class="table table-bordered table-striped table-hover" id="secretsTable">
     <thead class="table-dark">
         <tr>
             <th>
@@ -31,10 +28,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.SecretType)
             </th>
+            <th>
+            </th>
         </tr>
     </thead>
     <tbody>
-        @if(Model != null)
+        @if (Model != null)
         {
             @foreach (var item in Model)
             {
@@ -64,3 +63,23 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        function filterTableByName() {
+            var input = document.getElementById("jsFilterInput");
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById("secretsTable");
+            var trs = table.getElementsByTagName("tr");
+
+            // Start from 1 to skip the header row
+            for (var i = 1; i < trs.length; i++) {
+                var td = trs[i].getElementsByTagName("td")[0]; // Name column
+                if (td) {
+                    var txtValue = td.textContent || td.innerText;
+                    trs[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+    </script>
+}

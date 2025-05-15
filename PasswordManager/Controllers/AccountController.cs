@@ -1,24 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PasswordManager.Contexts;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PasswordManager.Models.Classes.Clients;
 using PasswordManager.Services;
 
 namespace PasswordManager.Controllers
 {
+    [Authorize(AuthenticationSchemes = "PasswordManagerAuth")]
     public class AccountController : Controller
     {
-        private readonly ClientContext _context;
-        private readonly ClientServices _clientServices;
+        private readonly ClientService _clientServices;
 
-        public AccountController(ClientContext context)
+        public AccountController(ClientService clientService)
         {
-            _context = context;
-            _clientServices = new ClientServices(context);
+            _clientServices = clientService;
         }
         [Route("[controller]")]
         public IActionResult Index()
@@ -41,7 +36,6 @@ namespace PasswordManager.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> LoginAccount(ClientBase client)
         {
-            // Logic to authenticate the user
             if (ModelState.IsValid)
             {
                 var foundClient = await _clientServices.GetClientAsync(client);
@@ -49,14 +43,12 @@ namespace PasswordManager.Controllers
                 if (foundClient != null)
                 {
                     await Authenticate(foundClient);
-                    Console.WriteLine($"\n\n{foundClient.Name} {foundClient.Email} {foundClient.MasterPassword} {foundClient.ClientType}\n\n");
-                    //If successful, redirect to a different action
                     return RedirectToAction("Index", "Passwords");
                 }
                 else
                     ModelState.AddModelError("", "Wrong email or password.");
             }
-            // If authentication fails, return to the login view with an error message
+
             return View(client);
         }
 
@@ -72,32 +64,35 @@ namespace PasswordManager.Controllers
         [Route("[controller]/Register")]
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterAccount(User user)
+        public async Task<IActionResult> RegisterAccount(User client)
         {
             if (ModelState.IsValid)
             {
-                var foundClient = await _clientServices.GetUserAsync(user);
+                var foundClient = await _clientServices.GetClientByEmailAsync(client.Email);
 
                 if (foundClient != null)
                 {
                     ModelState.AddModelError("", "A client with this email already exists.");
-                    return View(user);
+                    return View(client);
                 }
                 else
                 {
-                    _context.Users.Add(user);
+                    if(await _clientServices.AddClientAsync(client))
+                        await Authenticate(client);
+                    else
+                    {
+                        ModelState.AddModelError("", "Register Error.");
+                        return View(client);
+                    }
                 }
 
-                await _context.SaveChangesAsync();
-                await Authenticate(user);
 
-                //If successful, redirect to a different action
                 return RedirectToAction("Index", "Passwords");
             }
 
-            // If authentication fails, return to the login view with an error message
-            return View(user);
+            return View(client);
         }
+
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("PasswordManagerAuth");
@@ -120,15 +115,12 @@ namespace PasswordManager.Controllers
         [HttpPost]
         public IActionResult EditAccount(ClientBase client)
         {
-            // Logic to authenticate the user
             if (ModelState.IsValid)
             {
-                // If successful, redirect to a different action
                 return RedirectToAction("Index", "Account");
             }
             else
             {
-                // If authentication fails, return to the login view with an error message
                 return View(client);
             }
         }

@@ -1,0 +1,43 @@
+﻿@{
+	@model Pincode
+}
+
+<h1>Create</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="GetType" method="get" id="typeForm">
+            <div class="form-group">
+                <label class="control-label">Type</label>
+                <select class="form-control" id="secretTypeSelect" name="SecretType">
+                    <option value="@EnumSecretType.Pincode" selected>@EnumSecretType.Pincode</option>
+                    <option value="@EnumSecretType.SitePassword">@EnumSecretType.SitePassword</option>
+                </select>
+            </div>
+        </form>
+        <form asp-action="CreatePincode" method="post" id="mainForm">
+            <div class="form-group">
+                <label class="control-label">@Html.DisplayNameFor(model => model.Name)</label>
+                <input type="text" asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">@Html.DisplayNameFor(model => model.Value)</label>
+                <input type="text" asp-for="Value" class="form-control" />
+                <span asp-validation-for="Value" class="text-danger"></span>
+            </div>
+            <br />
+            <button type="submit" class="btn btn-primary">Create</button>
+            <button asp-action="Index" class="btn btn-secondary">Back</button>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('secretTypeSelect').addEventListener('change', function () {
+            var form = document.getElementById('typeForm');
+            form.submit();
+        });
+    </script>
+}

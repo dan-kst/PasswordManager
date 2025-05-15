@@ -1,79 +1,233 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using PasswordManager.Contexts;
+using PasswordManager.Models;
 using PasswordManager.Models.Classes.Secrets;
+using PasswordManager.Models.Enums;
+using PasswordManager.Services;
 
 namespace PasswordManager.Controllers
 {
     [Authorize(Policy = "User", AuthenticationSchemes = "PasswordManagerAuth")]
-    //[Authorize(Policy ="User")]
     public class PasswordsController : Controller
     {
-        public IActionResult Index()
+        private readonly ClientContext _clientContext;
+        private readonly SecretService _secretServices;
+        private int _clientId;
+
+        public PasswordsController(SecretService secretServices, ClientContext clientContext)
         {
-            return View();
+            _secretServices = secretServices;
+            _clientContext = clientContext;
         }
-        [HttpGet]
-        [Route("[controller]/Create")]
-        public IActionResult CreatePassword()
+
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            return View();
-        }
-        [HttpPost]
-        public IActionResult CreatePassword(SecretBase secret)
-        {
-            // Logic to create a password
-            // Logic to authenticate the user
-            if (ModelState.IsValid)
+            if (User?.Identity?.IsAuthenticated == true)
             {
-                // If successful, redirect to a different action
-                return RedirectToAction("Index", "Passwords");
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(idClaim, out var id))
+                    _clientId = id;
+                else
+                    _clientId = -1;
             }
             else
             {
-                // If authentication fails, return to the login view with an error message
-                return View(secret);
+                _clientId = -1;
+            }
+            base.OnActionExecuting(context);
+        }
+
+
+        public async Task<IActionResult> Index(string filterValue)
+        {
+            List<SecretBase>? passwords = null;
+            if (ViewData["CurrentFilter"] != null)
+                passwords = await _secretServices.GetFilteredSecretsAsync((string)ViewData["CurrentFilter"]);
+            else
+                passwords = await _secretServices.GetSecretsAsync(_clientId);
+            
+            return View(passwords);
+        }
+
+
+        [HttpGet]
+        public IActionResult GetType(SecretBase secret)
+        {
+            switch (secret.SecretType)
+            {
+                case EnumSecretType.Pincode:
+                    return RedirectToAction("CreatePincode");
+                case EnumSecretType.SitePassword:
+                    return RedirectToAction("CreateSitePassword");
+                default:
+                    return RedirectToAction("CreatePincode");
             }
         }
+
+
         [HttpGet]
-        [Route("[controller]/Edit/{id}")]
-        public IActionResult EditPassword(int id)
+        [Route("[controller]/Create/SitePassword")]
+        public  IActionResult CreateSitePassword()
         {
-            return View();
+            return View("Create/CreateSitePassword", new SitePassword());
         }
+
         [HttpPost]
-        public IActionResult EditPassword(SecretBase secret)
+        [Route("[controller]/Create/SitePassword")]
+        public async Task<IActionResult> CreateSitePassword(SitePassword sitePassword)
         {
-            // Logic to edit a password
-            // Logic to authenticate the user
             if (ModelState.IsValid)
             {
-                // If successful, redirect to a different action
-                return RedirectToAction("ViewPassword", "Passwords");
+                sitePassword.ClientId = _clientId;
+                var foundsecret = await _secretServices.CheckSecretAsync(sitePassword);
+                if(foundsecret)
+                {
+                    ModelState.AddModelError("", "Secret already exists.");
+                    return View("Create/CreateSitePassword", sitePassword);
+                }
+                else
+                {
+                    await _secretServices.AddSecret(sitePassword);
+                    return RedirectToAction("Index", "Passwords");
+                }
             }
             else
             {
-                // If authentication fails, return to the login view with an error message
-                return View(secret);
+                return View("Create/CreateSitePassword", sitePassword);
             }
         }
+
+
+        [HttpGet]
+        [Route("[controller]/Create/Pincode")]
+        public IActionResult CreatePincode()
+        {
+            return View("Create/CreatePincode", new Pincode());
+        }
+
+        [HttpPost]
+        [Route("[controller]/Create/Pincode")]
+        public async Task<IActionResult> CreatePincode(Pincode pincode)
+        {
+            if (ModelState.IsValid)
+            {
+                pincode.ClientId = _clientId;
+                var foundsecret = await _secretServices.CheckSecretAsync(pincode);
+                if (foundsecret)
+                {
+                    ModelState.AddModelError("", "Secret already exists.");
+                    return View("Create/CreatePincode", pincode);
+                }
+                else
+                {
+                    await _secretServices.AddSecret(pincode);
+                    return RedirectToAction("Index", "Passwords");
+                }
+            }
+            else
+            {
+                return View("Create/CreatePincode", pincode);
+            }
+        }
+
+
+        [HttpGet]
+        [Route("[controller]/Edit/{id}")] 
+        public async Task<IActionResult> EditPassword(int id)
+        {
+            var secret = await _secretServices.GetSecretAsync(id, _clientId);
+            if (secret == null)
+            {
+                return View("Error", new ErrorViewModel { RequestId = "EditPassword Error" });
+            }
+            else
+                switch (secret.SecretType)
+                {
+                    case EnumSecretType.Pincode:
+                        return View("Edit/EditPincode", secret as Pincode);
+                    case EnumSecretType.SitePassword:
+                        return View("Edit/EditSitePassword", secret as SitePassword);
+                    default:
+                        return View("Edit/EditPincode", secret as Pincode);
+                }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditSitePassword(SitePassword sitePassword)
+        {
+            if (ModelState.IsValid)
+            {
+                if(await _secretServices.UpdateSecret(sitePassword))
+                    return RedirectToAction("View", "Passwords", new { id = sitePassword.Id } );
+                else
+                    return View("Error", new ErrorViewModel { RequestId = "EditSitePassword Error" });
+            }
+            else
+            {
+                ModelState.AddModelError("", "Secret error.");
+                return RedirectToAction("EditPassword", "Passwords", sitePassword.Id);
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> EditPincode(Pincode pincode)
+        {
+            if (ModelState.IsValid)
+            {
+                if(await _secretServices.UpdateSecret(pincode))
+                    return RedirectToAction("View", "Passwords", new { id = pincode.Id });
+                else
+                    return View("Error", new ErrorViewModel { RequestId = "EditPincode Error" });
+            }
+            else
+            {
+                ModelState.AddModelError("", "Secret error.");
+                return RedirectToAction("EditPassword", "Passwords", pincode.Id);
+            }
+        }
+
+
+
         [HttpGet]
         [Route("[controller]/Delete/{id}")]
-        public IActionResult DeletePassword(int id)
+        public async Task<IActionResult> DeletePassword(int id)
         {
-            return View();
+            var secret = await _secretServices.GetSecretAsync(id, _clientId);
+            if(secret == null)
+                return View("Error", new ErrorViewModel { RequestId = "DeletePassword Error" });
+            else
+                return View(secret);
+
         }
         [HttpPost]
-        [Route("[controller]/Delete/{id}/Confirm")]
-        public IActionResult DeletePassword(int id, SecretBase secret)
+        [Route("[controller]/Delete/Confirm")]
+        public async Task<IActionResult> DeletePasswordConfirm(SecretBase secretBase)
         {
-            // Logic to delete a password
-            return View();
+            await _secretServices.DeleteSecret(secretBase.Id, _clientId);
+            return RedirectToAction("Index", "Passwords");
         }
+
+
         [Route("[controller]/View/{id}")]
-        public IActionResult ViewPassword(int id)
+        public async Task<IActionResult> ViewPassword(int id)
         {
-            return View();
+            var secret = await _secretServices.GetSecretAsync(id, _clientId);
+            if (secret == null)
+            {
+                return View("Error", new ErrorViewModel { RequestId = "SecretNotFound" });
+            }
+            else
+                switch (secret.SecretType)
+                {
+                    case EnumSecretType.Pincode:
+                        return View("View/ViewPincode", secret);
+                    case EnumSecretType.SitePassword:
+                        return View("View/ViewSitePassword", secret);
+                    default:
+                        return View("View/ViewPincode", secret);
+                }
         }
         [HttpGet]
         public IActionResult SearchPassword()
@@ -84,7 +238,6 @@ namespace PasswordManager.Controllers
         [Route("[controller]/SearchResult/{searchName}")]
         public IActionResult SearchPassword(string searchName)
         {
-            // Logic to search for a password
             return View();
         }
     }

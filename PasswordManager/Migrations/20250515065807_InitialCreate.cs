@@ -56,11 +56,17 @@ namespace PasswordManager.Migrations
                     Id = table.Column<int>(type: "int", nullable: false),
                     PasswordsDeleted = table.Column<int>(type: "int", nullable: false),
                     PasswordsCreated = table.Column<int>(type: "int", nullable: false),
-                    PasswordsUpdated = table.Column<int>(type: "int", nullable: false)
+                    PasswordsUpdated = table.Column<int>(type: "int", nullable: false),
+                    AdminId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Admin_AdminId",
+                        column: x => x.AdminId,
+                        principalTable: "Admin",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_User_ClientBase_Id",
                         column: x => x.Id,
@@ -70,7 +76,7 @@ namespace PasswordManager.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Secrets",
+                name: "SecretBase",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -81,49 +87,93 @@ namespace PasswordManager.Migrations
                     SecretType = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastUpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    SecretQuality = table.Column<int>(type: "int", nullable: true),
-                    SiteURL = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Secrets", x => x.Id);
+                    table.PrimaryKey("PK_SecretBase", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Secrets_ClientBase_ClientId",
+                        name: "FK_SecretBase_ClientBase_ClientId",
                         column: x => x.ClientId,
                         principalTable: "ClientBase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Secrets_User_UserId",
+                        name: "FK_SecretBase_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Pincode",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pincode", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Pincode_SecretBase_Id",
+                        column: x => x.Id,
+                        principalTable: "SecretBase",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SitePassword",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    SecretQuality = table.Column<int>(type: "int", nullable: false),
+                    SiteURL = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SitePassword", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SitePassword_SecretBase_Id",
+                        column: x => x.Id,
+                        principalTable: "SecretBase",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Secrets_ClientId",
-                table: "Secrets",
+                name: "IX_SecretBase_ClientId",
+                table: "SecretBase",
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Secrets_UserId",
-                table: "Secrets",
+                name: "IX_SecretBase_UserId",
+                table: "SecretBase",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_AdminId",
+                table: "User",
+                column: "AdminId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Admin");
+                name: "Pincode");
 
             migrationBuilder.DropTable(
-                name: "Secrets");
+                name: "SitePassword");
+
+            migrationBuilder.DropTable(
+                name: "SecretBase");
 
             migrationBuilder.DropTable(
                 name: "User");
+
+            migrationBuilder.DropTable(
+                name: "Admin");
 
             migrationBuilder.DropTable(
                 name: "ClientBase");

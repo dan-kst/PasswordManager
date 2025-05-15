@@ -2,17 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using PasswordManager.Contexts;
 using PasswordManager.Models.Classes.Clients;
+using PasswordManager.Services;
 
 namespace PasswordManager.Controllers
 {
     [Authorize(Roles ="Admin")]
     public class ClientsController : Controller
     {
-        private readonly ClientContext _context;
+        private readonly ClientService _clientServices;
 
-        public ClientsController(ClientContext context)
+        public ClientsController(ClientService clientServices)
         {
-            _context = context;
+            _clientServices = clientServices;
         }
         public IActionResult Index()
         {

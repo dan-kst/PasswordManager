@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using PasswordManager.Contexts;
 using PasswordManager.Models.Enums;
+using PasswordManager.Services;
+using System.Security.Claims;
 
 namespace PasswordManager
 {
@@ -15,6 +17,9 @@ namespace PasswordManager
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ClientContext>(options => options.UseSqlServer(connection));
+            
+            builder.Services.AddScoped<SecretService>();
+            builder.Services.AddScoped<ClientService>();
             //builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             builder.Services.AddAuthentication("PasswordManagerAuth")
                 .AddCookie("PasswordManagerAuth", options =>
@@ -24,7 +29,9 @@ namespace PasswordManager
                 });
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("Admin", policy => policy.RequireRole(EnumClientType.Admin.ToString()));
+                options.AddPolicy("Admin", policy =>
+                    policy.RequireRole(EnumClientType.Admin.ToString()));
+                    //policy.RequireClaim(ClaimTypes.NameIdentifier));
                 options.AddPolicy("User", policy => policy.RequireRole(EnumClientType.Personal.ToString()));
             });
 

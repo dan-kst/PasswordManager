@@ -72,11 +72,6 @@ namespace PasswordManager.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
                     b.Property<DateTime>("LastUpdatedDate")
                         .HasColumnType("datetime2");
 
@@ -98,11 +93,9 @@ namespace PasswordManager.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Secrets");
+                    b.ToTable("SecretBase", (string)null);
 
-                    b.HasDiscriminator().HasValue("SecretBase");
-
-                    b.UseTphMappingStrategy();
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("PasswordManager.Models.Classes.Clients.Admin", b =>
@@ -125,6 +118,9 @@ namespace PasswordManager.Migrations
                 {
                     b.HasBaseType("PasswordManager.Models.Classes.Clients.ClientBase");
 
+                    b.Property<int?>("AdminId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PasswordsCreated")
                         .HasColumnType("int");
 
@@ -134,6 +130,8 @@ namespace PasswordManager.Migrations
                     b.Property<int>("PasswordsUpdated")
                         .HasColumnType("int");
 
+                    b.HasIndex("AdminId");
+
                     b.ToTable("User", (string)null);
                 });
 
@@ -141,7 +139,7 @@ namespace PasswordManager.Migrations
                 {
                     b.HasBaseType("PasswordManager.Models.Classes.Secrets.SecretBase");
 
-                    b.HasDiscriminator().HasValue("Pincode");
+                    b.ToTable("Pincode", (string)null);
                 });
 
             modelBuilder.Entity("PasswordManager.Models.Classes.Secrets.SitePassword", b =>
@@ -154,7 +152,7 @@ namespace PasswordManager.Migrations
                     b.Property<string>("SiteURL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("SitePassword");
+                    b.ToTable("SitePassword", (string)null);
                 });
 
             modelBuilder.Entity("PasswordManager.Models.Classes.Secrets.SecretBase", b =>
@@ -183,11 +181,38 @@ namespace PasswordManager.Migrations
 
             modelBuilder.Entity("PasswordManager.Models.Classes.Clients.User", b =>
                 {
+                    b.HasOne("PasswordManager.Models.Classes.Clients.Admin", null)
+                        .WithMany("Users")
+                        .HasForeignKey("AdminId");
+
                     b.HasOne("PasswordManager.Models.Classes.Clients.ClientBase", null)
                         .WithOne()
                         .HasForeignKey("PasswordManager.Models.Classes.Clients.User", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PasswordManager.Models.Classes.Secrets.Pincode", b =>
+                {
+                    b.HasOne("PasswordManager.Models.Classes.Secrets.SecretBase", null)
+                        .WithOne()
+                        .HasForeignKey("PasswordManager.Models.Classes.Secrets.Pincode", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PasswordManager.Models.Classes.Secrets.SitePassword", b =>
+                {
+                    b.HasOne("PasswordManager.Models.Classes.Secrets.SecretBase", null)
+                        .WithOne()
+                        .HasForeignKey("PasswordManager.Models.Classes.Secrets.SitePassword", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PasswordManager.Models.Classes.Clients.Admin", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("PasswordManager.Models.Classes.Clients.User", b =>

@@ -23,12 +23,14 @@ namespace PasswordManager.Models.Classes.Clients
         public override string MasterPassword { get => base.MasterPassword; set => base.MasterPassword = value; }
         public override EnumClientType ClientType { get => base.ClientType; set => base.ClientType = value; }
 
+        public ICollection<User>? Users { get; set; }
         public int UsersDeleted { get; set; }
         public int UsersCreated { get; set; }
         public int UsersUpdated { get; set; }
         public Admin() : base()
         {
             ClientType = EnumClientType.Admin;
+            Users = null;
         }
     }
 }
