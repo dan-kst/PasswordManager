@@ -5,22 +5,24 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using PasswordManager.Contexts;
 using PasswordManager.Models;
 using PasswordManager.Models.Classes.Secrets;
+using PasswordManager.Models.Classes.Clients;
 using PasswordManager.Models.Enums;
 using PasswordManager.Services;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace PasswordManager.Controllers
 {
     [Authorize(Policy = "User", AuthenticationSchemes = "PasswordManagerAuth")]
     public class PasswordsController : Controller
     {
-        private readonly ClientContext _clientContext;
-        private readonly SecretService _secretServices;
-        private int _clientId;
+        private readonly SecretService _secretService;
+        private readonly ClientService _clientService;
+        private User? user;
 
-        public PasswordsController(SecretService secretServices, ClientContext clientContext)
+        public PasswordsController(ClientService clientService, SecretService secretServices, ClientContext clientContext)
         {
-            _secretServices = secretServices;
-            _clientContext = clientContext;
+            _secretService = secretServices;
+            _clientService = clientService;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -29,27 +31,23 @@ namespace PasswordManager.Controllers
             {
                 var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(idClaim, out var id))
-                    _clientId = id;
-                else
-                    _clientId = -1;
-            }
-            else
-            {
-                _clientId = -1;
+                {
+                    user = _clientService.GetClientByIdAsync(id).Result as User;
+                }
             }
             base.OnActionExecuting(context);
         }
 
-
-        public async Task<IActionResult> Index(string filterValue)
+        public async Task<IActionResult> Index()
         {
-            List<SecretBase>? passwords = null;
-            if (ViewData["CurrentFilter"] != null)
-                passwords = await _secretServices.GetFilteredSecretsAsync((string)ViewData["CurrentFilter"]);
+            if(user != null)
+            {
+                return View(await _secretService.GetSecretsAsync(user.Id));
+            }
             else
-                passwords = await _secretServices.GetSecretsAsync(_clientId);
-            
-            return View(passwords);
+            {
+                return View("Error", new ErrorViewModel { RequestId = "User Error" });
+            }
         }
 
 
@@ -68,6 +66,7 @@ namespace PasswordManager.Controllers
         }
 
 
+
         [HttpGet]
         [Route("[controller]/Create/SitePassword")]
         public  IActionResult CreateSitePassword()
@@ -79,10 +78,10 @@ namespace PasswordManager.Controllers
         [Route("[controller]/Create/SitePassword")]
         public async Task<IActionResult> CreateSitePassword(SitePassword sitePassword)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && user != null)
             {
-                sitePassword.ClientId = _clientId;
-                var foundsecret = await _secretServices.CheckSecretAsync(sitePassword);
+                sitePassword.ClientId = user.Id;
+                var foundsecret = await _secretService.CheckSecretAsync(sitePassword);
                 if(foundsecret)
                 {
                     ModelState.AddModelError("", "Secret already exists.");
@@ -90,8 +89,14 @@ namespace PasswordManager.Controllers
                 }
                 else
                 {
-                    await _secretServices.AddSecret(sitePassword);
-                    return RedirectToAction("Index", "Passwords");
+                    if (await _secretService.AddSecretAsync(sitePassword))
+                    {
+                        user.PasswordsCreated++;
+                        await _clientService.UpdateClientAsync(user);
+                        return RedirectToAction("Index", "Passwords");
+                    }
+                    else
+                        return View("Error", new ErrorViewModel { RequestId = "CreateSitePassword Error" });
                 }
             }
             else
@@ -99,6 +104,7 @@ namespace PasswordManager.Controllers
                 return View("Create/CreateSitePassword", sitePassword);
             }
         }
+
 
 
         [HttpGet]
@@ -112,10 +118,10 @@ namespace PasswordManager.Controllers
         [Route("[controller]/Create/Pincode")]
         public async Task<IActionResult> CreatePincode(Pincode pincode)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && user != null)
             {
-                pincode.ClientId = _clientId;
-                var foundsecret = await _secretServices.CheckSecretAsync(pincode);
+                pincode.ClientId = user.Id;
+                var foundsecret = await _secretService.CheckSecretAsync(pincode);
                 if (foundsecret)
                 {
                     ModelState.AddModelError("", "Secret already exists.");
@@ -123,8 +129,14 @@ namespace PasswordManager.Controllers
                 }
                 else
                 {
-                    await _secretServices.AddSecret(pincode);
-                    return RedirectToAction("Index", "Passwords");
+                    if (await _secretService.AddSecretAsync(pincode))
+                    {
+                        user.PasswordsCreated++;
+                        await _clientService.UpdateClientAsync(user);
+                        return RedirectToAction("Index", "Passwords");
+                    }
+                    else
+                        return View("Error", new ErrorViewModel { RequestId = "CreatePincode Error" });
                 }
             }
             else
@@ -134,34 +146,44 @@ namespace PasswordManager.Controllers
         }
 
 
+
         [HttpGet]
         [Route("[controller]/Edit/{id}")] 
         public async Task<IActionResult> EditPassword(int id)
         {
-            var secret = await _secretServices.GetSecretAsync(id, _clientId);
-            if (secret == null)
+            if (user != null)
             {
-                return View("Error", new ErrorViewModel { RequestId = "EditPassword Error" });
+                var secret = await _secretService.GetSecretAsync(id, user.Id);
+                if (secret == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = "EditPassword Error" });
+                }
+                else
+                    switch (secret.SecretType)
+                    {
+                        case EnumSecretType.Pincode:
+                            return View("Edit/EditPincode", secret as Pincode);
+                        case EnumSecretType.SitePassword:
+                            return View("Edit/EditSitePassword", secret as SitePassword);
+                        default:
+                            return View("Edit/EditPincode", secret as Pincode);
+                    }
             }
             else
-                switch (secret.SecretType)
-                {
-                    case EnumSecretType.Pincode:
-                        return View("Edit/EditPincode", secret as Pincode);
-                    case EnumSecretType.SitePassword:
-                        return View("Edit/EditSitePassword", secret as SitePassword);
-                    default:
-                        return View("Edit/EditPincode", secret as Pincode);
-                }
+                return View("Error", new ErrorViewModel { RequestId = "User Error" });
         }
 
         [HttpPost]
         public async Task<IActionResult> EditSitePassword(SitePassword sitePassword)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && user != null)
             {
-                if(await _secretServices.UpdateSecret(sitePassword))
+                if(await _secretService.UpdateSecretAsync(sitePassword))
+                {
+                    user.PasswordsUpdated++;
+                    await _clientService.UpdateClientAsync(user);
                     return RedirectToAction("View", "Passwords", new { id = sitePassword.Id } );
+                }
                 else
                     return View("Error", new ErrorViewModel { RequestId = "EditSitePassword Error" });
             }
@@ -171,13 +193,18 @@ namespace PasswordManager.Controllers
                 return RedirectToAction("EditPassword", "Passwords", sitePassword.Id);
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> EditPincode(Pincode pincode)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && user != null)
             {
-                if(await _secretServices.UpdateSecret(pincode))
+                if(await _secretService.UpdateSecretAsync(pincode))
+                {
+                    user.PasswordsUpdated++;
+                    await _clientService.UpdateClientAsync(user);
                     return RedirectToAction("View", "Passwords", new { id = pincode.Id });
+                }
                 else
                     return View("Error", new ErrorViewModel { RequestId = "EditPincode Error" });
             }
@@ -194,51 +221,66 @@ namespace PasswordManager.Controllers
         [Route("[controller]/Delete/{id}")]
         public async Task<IActionResult> DeletePassword(int id)
         {
-            var secret = await _secretServices.GetSecretAsync(id, _clientId);
-            if(secret == null)
-                return View("Error", new ErrorViewModel { RequestId = "DeletePassword Error" });
+            if (user != null)
+            {
+                var secret = await _secretService.GetSecretAsync(id, user.Id);
+                if(secret == null)
+                    return View("Error", new ErrorViewModel { RequestId = "DeletePassword Error" });
+                else
+                    return View(secret);
+            }
             else
-                return View(secret);
+            {
+                return View("Error", new ErrorViewModel { RequestId = "User Error" });
+            }
 
         }
         [HttpPost]
         [Route("[controller]/Delete/Confirm")]
         public async Task<IActionResult> DeletePasswordConfirm(SecretBase secretBase)
         {
-            await _secretServices.DeleteSecret(secretBase.Id, _clientId);
-            return RedirectToAction("Index", "Passwords");
+            if(user != null)
+            {
+                if(await _secretService.DeleteSecretAsync(secretBase.Id, user.Id))
+                {
+                    user.PasswordsDeleted++;
+                    await _clientService.UpdateClientAsync(user);
+                    return RedirectToAction("Index", "Passwords");
+                }
+                else
+                    return View("Error", new ErrorViewModel { RequestId = "DeletePassword Confirm Error" });
+            }
+            else
+                return View("Error", new ErrorViewModel { RequestId = "User Error" });
         }
+
 
 
         [Route("[controller]/View/{id}")]
         public async Task<IActionResult> ViewPassword(int id)
         {
-            var secret = await _secretServices.GetSecretAsync(id, _clientId);
-            if (secret == null)
+            if (user != null)
             {
-                return View("Error", new ErrorViewModel { RequestId = "SecretNotFound" });
+                var secret = await _secretService.GetSecretAsync(id, user.Id);
+                if (secret == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = "SecretNotFound" });
+                }
+                else
+                    switch (secret.SecretType)
+                    {
+                        case EnumSecretType.Pincode:
+                            return View("View/ViewPincode", secret);
+                        case EnumSecretType.SitePassword:
+                            return View("View/ViewSitePassword", secret);
+                        default:
+                            return View("View/ViewPincode", secret);
+                    }
             }
             else
-                switch (secret.SecretType)
-                {
-                    case EnumSecretType.Pincode:
-                        return View("View/ViewPincode", secret);
-                    case EnumSecretType.SitePassword:
-                        return View("View/ViewSitePassword", secret);
-                    default:
-                        return View("View/ViewPincode", secret);
-                }
-        }
-        [HttpGet]
-        public IActionResult SearchPassword()
-        {
-            return View();
-        }
-        [HttpPost]
-        [Route("[controller]/SearchResult/{searchName}")]
-        public IActionResult SearchPassword(string searchName)
-        {
-            return View();
+            {
+                return View("Error", new ErrorViewModel { RequestId = "User Error" });
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿@{
-	@model Admin
+	@model ClientBase
 	ViewData["Title"] = "Delete Admin";
 }
 
@@ -7,7 +7,9 @@
 
 <p>Are you sure you want to delete the client <strong>@Model.Email</strong>?</p>
 
-<form asp-action="DeleteClient" method="post">
+<form asp-action="DeleteClientConfirm" method="post">
+	<input type="text" asp-for="Id" class="form-control" hidden />
+
 	<button type="submit" class="btn btn-danger">Confirm Delete</button>
-	<a href="@Url.Action("Index", "Clients")" class="btn btn-secondary">Cancel</a>
+	<a asp-action="Index" asp-controller="Clients" class="btn btn-primary">Back</a>
 </form>

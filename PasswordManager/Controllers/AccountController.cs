@@ -3,23 +3,46 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using PasswordManager.Models.Classes.Clients;
 using PasswordManager.Services;
+using PasswordManager.Models.Enums;
+using PasswordManager.Models;
 
 namespace PasswordManager.Controllers
 {
     [Authorize(AuthenticationSchemes = "PasswordManagerAuth")]
     public class AccountController : Controller
     {
-        private readonly ClientService _clientServices;
-
+        private readonly ClientService _clientService;
         public AccountController(ClientService clientService)
         {
-            _clientServices = clientService;
+            _clientService = clientService;
         }
-        [Route("[controller]")]
-        public IActionResult Index()
+
+
+        [Route("[controller]/View/{id}")]
+        public async Task<IActionResult> Index(int id)
         {
-            //ClaimsPrincipal user = HttpContext.User;
-            return View();
+            if (id != -1)
+            {
+                var client = await _clientService.GetClientByIdAsync(id);
+                if (client == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = "ClientNotFound" });
+                }
+                else
+                    switch (client.ClientType)
+                    {
+                        case EnumClientType.Admin:
+                            return View("View/ViewAdmin", client);
+                        case EnumClientType.Personal:
+                            return View("View/ViewUser", client);
+                        default:
+                            return View("View/ViewUser", client);
+                    }
+            }
+            else
+            {
+                return View("Error", new ErrorViewModel { RequestId = "ClientId is -1" });
+            }
         }
 
 
@@ -28,7 +51,7 @@ namespace PasswordManager.Controllers
         [AllowAnonymous]
         public IActionResult LoginAccount()
         {
-            return View();
+            return View(new ClientBase());
         }
 
         [Route("[controller]/Login")]
@@ -38,12 +61,17 @@ namespace PasswordManager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var foundClient = await _clientServices.GetClientAsync(client);
+                var foundClient = await _clientService.GetClientAsync(client);
 
                 if (foundClient != null)
                 {
                     await Authenticate(foundClient);
-                    return RedirectToAction("Index", "Passwords");
+                    if(foundClient.ClientType == EnumClientType.Admin)
+                        return RedirectToAction("Index", "Clients");
+                    else if (foundClient.ClientType == EnumClientType.Personal)
+                        return RedirectToAction("Index", "Passwords");
+                    else
+                        return RedirectToAction("Index", "Home");
                 }
                 else
                     ModelState.AddModelError("", "Wrong email or password.");
@@ -58,7 +86,7 @@ namespace PasswordManager.Controllers
         [AllowAnonymous]
         public IActionResult RegisterAccount()
         {
-            return View();
+            return View(new User());
         }
 
         [Route("[controller]/Register")]
@@ -68,7 +96,7 @@ namespace PasswordManager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var foundClient = await _clientServices.GetClientByEmailAsync(client.Email);
+                var foundClient = await _clientService.GetClientByEmailAsync(client.Email);
 
                 if (foundClient != null)
                 {
@@ -77,7 +105,7 @@ namespace PasswordManager.Controllers
                 }
                 else
                 {
-                    if(await _clientServices.AddClientAsync(client))
+                    if(await _clientService.AddClientAsync(client))
                         await Authenticate(client);
                     else
                     {
@@ -101,40 +129,69 @@ namespace PasswordManager.Controllers
 
         private async Task Authenticate(ClientBase client)
         {
-            var principal = _clientServices.AuthenticateClient(client);
+            var principal = _clientService.AuthenticateClient(client);
             await HttpContext.SignInAsync("PasswordManagerAuth", principal);
         }
 
 
         [HttpGet]
         [Route("[controller]/Edit/{id}")]
-        public IActionResult EditAccount(int id)
+        public async Task<IActionResult> EditAccount(int id)
         {
-            return View();
+            var client = await _clientService.GetClientByIdAsync(id);
+            if (client != null)
+            {
+                switch (client.ClientType)
+                {
+                    case EnumClientType.Admin:
+                        return View("Edit/EditAdmin", client as Admin);
+                    case EnumClientType.Personal:
+                        return View("Edit/EditUser", client as User);
+                    default:
+                        return View("Edit/EditUser", client as User);
+                }
+            }
+            else
+                return View("Error", new ErrorViewModel { RequestId = "EditAccount Get Error" });
         }
         [HttpPost]
-        public IActionResult EditAccount(ClientBase client)
+        public async Task<IActionResult> EditAccountConfirm(ClientBase client)
         {
             if (ModelState.IsValid)
             {
-                return RedirectToAction("Index", "Account");
+                if (await _clientService.UpdateClientAsync(client))
+                    return RedirectToAction("Index", "Account", new { id = client.Id });
+                else
+                    return View("Error", new ErrorViewModel { RequestId = "EditAccount Post Error" });
             }
             else
             {
-                return View(client);
+                ModelState.AddModelError("", "Secret error.");
+                return RedirectToActionPermanent("EditAccount", new { client.Id });
             }
         }
         [HttpGet]
         [Route("[controller]/Delete/{id}")]
-        public IActionResult DeleteAccount()
+        public async Task<IActionResult> DeleteAccount(int id)
         {
-            return View();
+            var secret = await _clientService.GetClientByIdAsync(id);
+            if (secret == null)
+                return View("Error", new ErrorViewModel { RequestId = "DeleteAccount Error" });
+            else
+                return View(secret);
+
         }
+
         [HttpPost]
-        [Route("[controller]/Delete/{id}/Confirm")]
-        public IActionResult DeleteAccount(int id, ClientBase client)
+        [Route("[controller]/Delete/Confirm")]
+        public async Task<IActionResult> DeleteAccountConfirm(ClientBase client)
         {
-            return View();
+            if(await _clientService.DeleteClientByIdAsync(client.Id))
+            {
+                return await Logout();
+            }
+            else
+                return View("Error", new ErrorViewModel { RequestId = "DeleteAccount Confirm Error" });
         }
     }
 }

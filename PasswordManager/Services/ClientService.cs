@@ -31,6 +31,17 @@ namespace PasswordManager.Services
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<ClientBase>?> GetClientsAsync()
+        {
+            return await _context.Clients.ToListAsync();
+        }
+        public async Task<List<ClientBase>?> GetClientsAsync(int id)
+        {
+            return await _context.Clients
+                .Where(c => c.Id != id)
+                .ToListAsync();
+        }
+
         public async Task<ClientBase?> GetClientAsync(ClientBase client)
         {
             return await _context.Clients
@@ -78,16 +89,16 @@ namespace PasswordManager.Services
                 return false;
         }
 
-        public async Task<bool> DeleteClientAsync(ClientBase client)
+        public async Task<bool> DeleteClientByIdAsync(int id)
         {
-            var secret = await GetClientByIdAsync(client.Id);
-            if (secret == null)
+            var result = await GetClientByIdAsync(id);
+            if (result == null)
             {
                 return false;
             }
             else
             {
-                _context.Clients.Remove(client);
+                _context.Clients.Remove(result);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -115,7 +126,57 @@ namespace PasswordManager.Services
             else
             {
                 result.LastUpdatedDate = DateTime.Now;
+                result.Name = client.Name;
+                result.Email = client.Email;
+                result.MasterPassword = client.MasterPassword;
+
                 _context.Clients.Update(result);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+        }
+
+        public async Task<bool> UpdateClientAsync(Admin admin)
+        {
+            var result = await GetClientByIdAsync(admin.Id) as Admin;
+            if (result == null)
+            {
+                return false;
+            }
+            else
+            {
+                result.LastUpdatedDate = DateTime.Now;
+                result.Name = admin.Name;
+                result.Email = admin.Email;
+                result.MasterPassword = admin.MasterPassword;
+                result.UsersCreated = admin.UsersCreated;
+                result.UsersUpdated = admin.UsersUpdated;
+                result.UsersDeleted = admin.UsersDeleted;
+
+                _context.Admins.Update(result);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+        }
+
+        public async Task<bool> UpdateClientAsync(User user)
+        {
+            var result = await GetClientByIdAsync(user.Id) as User;
+            if (result == null)
+            {
+                return false;
+            }
+            else
+            {
+                result.LastUpdatedDate = DateTime.Now;
+                result.Name = user.Name;
+                result.Email = user.Email;
+                result.MasterPassword = user.MasterPassword;
+                result.PasswordsCreated = user.PasswordsCreated;
+                result.PasswordsUpdated = user.PasswordsUpdated;
+                result.PasswordsDeleted = user.PasswordsDeleted;
+                
+                _context.Users.Update(result);
                 await _context.SaveChangesAsync();
                 return true;
             }

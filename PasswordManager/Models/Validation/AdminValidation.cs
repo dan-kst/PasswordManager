@@ -12,5 +12,6 @@
         public const string INVALID_PASSWORD_LENGTH = "Invalid Password length.";
 
         public const string INVALID_EMAIL_ADDRESS = "Invalid Email Address.";
+        public const string ADMIN_KEY = "vkW9h%z_.H:{>E=rP,wK;j";
     }
 }

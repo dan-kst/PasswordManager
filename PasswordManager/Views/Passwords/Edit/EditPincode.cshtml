@@ -17,13 +17,16 @@
             </div>
             <div class="form-group">
                 <label class="control-label">@Html.DisplayNameFor(model => model.Value)</label>
-                <input type="text" asp-for="Value" class="form-control" />
+                <div class="input-group">
+                    <input type="password" asp-for="Value" value="@Model.Value" class="form-control" id="masterPasswordInput" />
+                    <button type="button" class="btn btn-outline-secondary" id="togglePasswordBtn" tabindex="-1">Show</button>
+                </div>
                 <span asp-validation-for="Value" class="text-danger"></span>
             </div>
 
             <br/>
             <button type="submit" class="btn btn-primary">Edit</button>
-            <button asp-action="Index" class="btn btn-secondary">Back</button>
+            <a asp-action="Index" class="btn btn-link">Back</a>
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </form>

@@ -1,95 +1,205 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PasswordManager.Contexts;
+using Microsoft.AspNetCore.Mvc.Filters;
+using PasswordManager.Models;
 using PasswordManager.Models.Classes.Clients;
+using PasswordManager.Models.Enums;
+using PasswordManager.Models.Validation;
 using PasswordManager.Services;
 
 namespace PasswordManager.Controllers
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize(Policy = "Admin", AuthenticationSchemes = "PasswordManagerAuth")]
     public class ClientsController : Controller
     {
-        private readonly ClientService _clientServices;
+        private readonly ClientService _clientService;
+        private Admin? _admin;
 
-        public ClientsController(ClientService clientServices)
+        public ClientsController(ClientService clientService)
         {
-            _clientServices = clientServices;
+            _clientService = clientService;
         }
-        public IActionResult Index()
+
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            return View();
-        }
-        [HttpGet]
-        [Route("Admin/Create")]
-        public IActionResult CreateClient()
-        {
-            return View();
-        }
-        [HttpPost]
-        public IActionResult CreateClient(ClientBase client)
-        {
-            // Logic to authenticate the user
-            if (ModelState.IsValid)
+            if (User?.Identity?.IsAuthenticated == true)
             {
-                // If successful, redirect to a different action
-                return RedirectToAction("Index", "Admin");
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(idClaim, out var id))
+                {
+                    _admin = _clientService.GetClientByIdAsync(id).Result as Admin;
+                }
+            }
+            base.OnActionExecuting(context);
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            if (_admin != null)
+            {
+                return View(await _clientService.GetClientsAsync(_admin.Id));
             }
             else
             {
-                // If authentication fails, return to the login view with an error message
-                return View(client);
+                return View("Error", new ErrorViewModel { RequestId = "Admin Error" });
             }
         }
+
+
         [HttpGet]
-        [Route("Admin/Edit/{id}")]
+        [Route("[controller]/Create/Admin")]
+        [AllowAnonymous]
+        public IActionResult CreateAdmin([FromQuery] string? key)
+        {
+            if ((!string.IsNullOrEmpty(key) && key.Equals(AdminValidation.ADMIN_KEY)) || User.IsInRole("Admin"))
+            {
+                return View("Create/CreateAdmin", new Admin());
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/Create/User")]
+        public IActionResult CreateUser()
+        {
+            return View("Create/CreateUser", new User());
+        }
+
+
+
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("[controller]/Create/Admin")]
+        public async Task<IActionResult> CreateAdmin(Admin admin)
+        {
+            if (ModelState.IsValid)
+            {
+                var foundsecret = await _clientService.CheckClientAsync(admin);
+                if (foundsecret)
+                {
+                    ModelState.AddModelError("", "This admin already exists.");
+                    return View("Create/CreateAdmin", admin);
+                }
+                else
+                {
+                    if (await _clientService.AddClientAsync(admin))
+                    {
+                        return RedirectToAction("Index", "Clients");
+                    }
+                    else
+                        return View("Error", new ErrorViewModel { RequestId = "DeletePassword Confirm Error" });
+                }
+            }
+            else
+            {
+                return View("Create/CreateAdmin", admin);
+            }
+        }
+
+        [HttpPost]
+        [Route("[controller]/Create/User")]
+        public async Task<IActionResult> CreateUser(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                var foundsecret = await _clientService.CheckClientAsync(user);
+                if (foundsecret)
+                {
+                    ModelState.AddModelError("", "This user already exists.");
+                    return View("Create/CreateUser", user);
+                }
+                else
+                {
+                    if (await _clientService.AddClientAsync(user))
+                    {
+                        _admin.UsersCreated++;
+                        await _clientService.UpdateClientAsync(user);
+                        return RedirectToAction("Index", "Clients");
+                    }
+                    else
+                        return View("Error", new ErrorViewModel { RequestId = "DeletePassword Confirm Error" });
+                }
+            }
+            else
+            {
+                return View("Create/CreateUser", user);
+            }
+        }
+
+
+
+        [HttpGet]
+        [Route("[controller]/Edit/{id}")]
         public IActionResult EditClient(int id)
         {
-            return View();
+            return View("../Account/EditAccount", new { id });
         }
         [HttpPost]
-        public IActionResult EditClient(ClientBase client)
+        public async Task<IActionResult> EditClient(ClientBase client)
         {
-            // Logic to authenticate the user
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && _admin != null)
             {
-                // If successful, redirect to a different action
-                return RedirectToAction("ViewUser", "Admin");
+                switch (client.ClientType)
+                {
+                    case EnumClientType.Admin:
+                        if (!await _clientService.UpdateClientAsync(client as Admin))
+                            return View("Error", new ErrorViewModel { RequestId = "EditClient Admin Error" });
+                        break;
+                    case EnumClientType.Personal:
+                        if (await _clientService.UpdateClientAsync(client as User))
+                        {
+                            _admin.UsersUpdated++;
+                            await _clientService.UpdateClientAsync(_admin);
+                        }
+                        else
+                            return View("Error", new ErrorViewModel { RequestId = "EditClient User Error" });
+                        break;
+                    default:
+                        return View("Error", new ErrorViewModel { RequestId = "DeletePassword None Error" });
+                }
+
+                return RedirectToAction("ViewClient", "Clients", new { client.Id });
             }
             else
             {
-                // If authentication fails, return to the login view with an error message
                 return View(client);
             }
         }
+
+
+
         [HttpGet]
-        [Route("Admin/Delete/{id}")]
-        public IActionResult DeleteClient(int id)
+        [Route("[controller]/Delete/{id}")]
+        public async Task<IActionResult> DeleteClient(int id)
         {
-            return View();
+            return View(await _clientService.GetClientByIdAsync(id));
         }
         [HttpPost]
-        [Route("Admin/Delete/{id}/Confirm")]
-        public IActionResult DeleteClient(int id, ClientBase client)
+        [Route("[controller]/Delete/Confirm")]
+        public async Task<IActionResult> DeleteClientConfirm(ClientBase client)
         {
-            return View();
+            if(await _clientService.DeleteClientByIdAsync(client.Id))
+            {
+                _admin.UsersDeleted++;
+                await _clientService.UpdateClientAsync(_admin);
+                return RedirectToAction("Index", "Clients");
+            }
+            else
+                return View("Error", new ErrorViewModel { RequestId = "EditClient User Error" });
         }
+
+
+
         [HttpGet]
-        [Route("Admin/View/{id}")]
-        public IActionResult ViewClient()
+        [Route("[controller]/View/{id}")]
+        public IActionResult ViewClient(int id)
         {
-            return View();
-        }
-        [HttpGet]
-        [Route("Admin/SearchResults")]
-        public IActionResult SearchClient()
-        {
-            return View();
-        }
-        [HttpPost]
-        [Route("Admin/SearchResults/{searchName}")]
-        public IActionResult SearchClient(string searchName)
-        {
-            return View();
+            return RedirectToActionPermanent("Index", "Account", new { id });
         }
     }
 }

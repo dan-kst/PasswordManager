@@ -1,0 +1,75 @@
+﻿@{
+	@model Admin
+	ViewData["Title"] = "Account - Admin";
+}
+
+<h1>Admin Account</h1>
+
+<table class="table table-bordered table-striped table-hover">
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.Name)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.Name)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.Email)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.Email)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.CreatedDate)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.CreatedDate)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.LastUpdatedDate)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.LastUpdatedDate)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.UsersCreated)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.UsersCreated)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.UsersUpdated)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.UsersUpdated)
+		</td>
+	</tr>
+
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.UsersDeleted)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.UsersDeleted)
+		</td>
+	</tr>
+</table>
+<br />
+@if(User.IsInRole("Admin"))
+{
+	<a asp-action="EditAccount" asp-route-id="@Model.Id" class="btn btn-link">Edit</a>
+	@:|
+	<a asp-action="DeleteAccount" asp-route-id="@Model.Id" class="btn btn-link">Delete</a>
+	@:|
+	<a asp-action="Index" asp-controller="Home" class="btn btn-primary">Back</a>
+}

@@ -15,13 +15,6 @@ namespace PasswordManager.Services
             _context = context;
         }
 
-        public async Task<List<SecretBase>?> GetFilteredSecretsAsync(string filterValue)
-        {
-            return await _context.Secrets
-                .Where(c => c.Name != null && c.Name.StartsWith(filterValue))
-                .ToListAsync();
-        }
-
         public async Task<List<SecretBase>?> GetSecretsAsync(int clientId)
         {
             return await _context.Secrets
@@ -39,22 +32,22 @@ namespace PasswordManager.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<bool> AddSecret(SecretBase secret)
+        public async Task<bool> AddSecretAsync(SecretBase secret)
         {
             switch(secret.SecretType)
             {
                 case EnumSecretType.Pincode:
-                    await AddSecret(secret as Pincode);
+                    await AddSecretAsync(secret as Pincode);
                     return true;
                 case EnumSecretType.SitePassword:
-                    await AddSecret(secret as SitePassword);
+                    await AddSecretAsync(secret as SitePassword);
                     return true;
                 default:
                     return false;
             }
         }
 
-        public async Task<bool> AddSecret(SitePassword? sitePassword)
+        public async Task<bool> AddSecretAsync(SitePassword? sitePassword)
         {
             if (sitePassword != null)
             {
@@ -65,18 +58,20 @@ namespace PasswordManager.Services
             else
                 return false;
         }
-        public async Task AddSecret(Pincode? pincode)
+        public async Task<bool> AddSecretAsync(Pincode? pincode)
         {
             if(pincode != null)
             {
                 _context.Secrets.Add(pincode);
-                
                 await _context.SaveChangesAsync();
+                return true;
             }
+            else
+                return false;
         }
 
 
-        public async Task<bool> DeleteSecret(int Id, int clientId)
+        public async Task<bool> DeleteSecretAsync(int Id, int clientId)
         {
             var secret = await GetSecretAsync(Id, clientId);
             if(secret == null)
@@ -92,7 +87,7 @@ namespace PasswordManager.Services
         }
 
 
-        public async Task<bool> UpdateSecret(SitePassword sitePasssword)
+        public async Task<bool> UpdateSecretAsync(SitePassword sitePasssword)
         {
             var secret = await GetSecretAsync(sitePasssword.Id, sitePasssword.ClientId);
             if(secret == null || !secret.SecretType.Equals(sitePasssword.SecretType))
@@ -102,19 +97,27 @@ namespace PasswordManager.Services
             else
             {
                 var result = secret as SitePassword;
+                if(result != null)
+                {
+                    result.LastUpdatedDate = DateTime.Now;
+                    result.Value = sitePasssword.Value;
+                    result.Name = sitePasssword.Name;
+                    result.SecretQuality = sitePasssword.SecretQuality;
+                    result.SiteURL = sitePasssword.SiteURL;
 
-                result.LastUpdatedDate = DateTime.Now;
-                result.Value = sitePasssword.Value;
-                result.Name = sitePasssword.Name;
-                result.SecretQuality = sitePasssword.SecretQuality;
-                result.SiteURL = sitePasssword.SiteURL;
-                _context.SitePasswords.Update(result);
-                await _context.SaveChangesAsync();
-                return true;
+                    _context.SitePasswords.Update(result);
+                    await _context.SaveChangesAsync();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
-        public async Task<bool> UpdateSecret(Pincode pincode)
+        public async Task<bool> UpdateSecretAsync(Pincode pincode)
         {
             var secret = await GetSecretAsync(pincode.Id, pincode.ClientId);
             if (secret == null || !secret.SecretType.Equals(pincode.SecretType))
@@ -124,14 +127,21 @@ namespace PasswordManager.Services
             else
             {
                 var result = secret as Pincode;
+                if(result != null)
+                {
+                    result.LastUpdatedDate = DateTime.Now;
+                    result.Value = pincode.Value;
+                    result.Name = pincode.Name;
 
-                result.LastUpdatedDate = DateTime.Now;
-                result.Value = pincode.Value;
-                result.Name = pincode.Name;
+                    _context.PinCodes.Update(result);
+                    await _context.SaveChangesAsync();
 
-                _context.PinCodes.Update(result);
-                await _context.SaveChangesAsync();
-                return true;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

@@ -1,23 +1,26 @@
 ﻿@{
 	@model User
-    ViewData["Title"] = "Register";
+	ViewData["Title"] = "Edit User";
 }
 
-<h1>Register</h1>
+<h1>Edit User</h1>
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="RegisterAccount" method="post">
-            
+        <form asp-action="EditAccountConfirm" method="post">
+            <input type="text" asp-for="Id" class="form-control" hidden />
+
             <div class="form-group">
                 <label class="control-label">@Html.DisplayNameFor(model => model.Name)</label>
                 <input type="text" asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label class="control-label">@Html.DisplayNameFor(model => model.Email)</label>
                 <input type="text" asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label class="control-label">@Html.DisplayNameFor(model => model.MasterPassword)</label>
                 <div class="input-group">
@@ -27,9 +30,9 @@
                 <span asp-validation-for="MasterPassword" class="text-danger"></span>
             </div>
 
-            <br />
-            <button type="submit" class="btn btn-primary">Sign In</button>
-            <a asp-action="Index" asp-controller="Home" class="btn btn-link">Back</a>
+            <br/>
+            <button type="submit" class="btn btn-primary">Edit</button>
+            <a asp-action="Index" asp-route-id="@Model.Id" class="btn btn-link">Back</a>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         </form>
     </div>

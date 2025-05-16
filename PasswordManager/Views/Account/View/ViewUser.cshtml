@@ -1,0 +1,81 @@
+﻿@{
+	@model User
+	ViewData["Title"] = "Account - User";
+}
+
+<h1>User Account</h1>
+
+<table class="table table-bordered table-striped table-hover">
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.Name)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.Name)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.Email)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.Email)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.CreatedDate)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.CreatedDate)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.LastUpdatedDate)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.LastUpdatedDate)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.PasswordsCreated)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.PasswordsCreated)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.PasswordsUpdated)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.PasswordsUpdated)
+		</td>
+	</tr>
+	<tr>
+		<th>
+			@Html.DisplayNameFor(model => model.PasswordsDeleted)
+		</th>
+		<td>
+			@Html.DisplayFor(model => model.PasswordsDeleted)
+		</td>
+	</tr>
+</table>
+<br />
+@if(User.IsInRole("Personal"))
+{
+	<a asp-action="EditAccount" asp-route-id="@Model.Id" class="btn btn-link">Edit</a>
+	@:|
+	<a asp-action="DeleteAccount" asp-route-id="@Model.Id" class="btn btn-link">Delete</a>
+	@:|
+	<a asp-action="Index" asp-controller="Home" class="btn btn-primary">Back</a>
+}
+else if(User.IsInRole("Admin"))
+{
+	<a asp-action="DeleteClient" asp-controller="Clients" asp-route-id="@Model.Id" class="btn btn-link">Delete</a>
+	@:|
+	<a asp-action="Index" asp-controller="Clients" class="btn btn-primary">Back</a>
+}
+

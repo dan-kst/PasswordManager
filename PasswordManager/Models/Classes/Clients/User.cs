@@ -22,8 +22,6 @@ namespace PasswordManager.Models.Classes.Clients
                         MinimumLength = UserValidation.MIN_PASSWORD_LENGTH, 
                         ErrorMessage = UserValidation.INVALID_PASSWORD_LENGTH)]
         public override string MasterPassword { get => base.MasterPassword; set => base.MasterPassword = value; }
-        
-        public ICollection<SecretBase>? Secrets { get; set; }
        
         public int PasswordsDeleted { get; set; }
         public int PasswordsCreated { get; set; }
@@ -33,7 +31,6 @@ namespace PasswordManager.Models.Classes.Clients
         public User() : base()
         {
             ClientType = EnumClientType.Personal;
-            Secrets = null;
         }
     }
 }
